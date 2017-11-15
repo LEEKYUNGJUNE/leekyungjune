@@ -1,1 +1,1 @@
-lguplus_docs
+# lgu+ project repository

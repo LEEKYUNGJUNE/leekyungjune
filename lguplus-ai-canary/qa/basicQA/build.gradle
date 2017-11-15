@@ -1,0 +1,108 @@
+group 'ai.mindslab'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:1.2.4"
+        classpath "gradle.plugin.com.google.protobuf:protobuf-gradle-plugin:0.8.1"
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+def jacksonVersion = '2.8.5'
+def grpcVersion = '1.6.1'
+def quartzVersion = '2.3.0'
+def springVersion = '4.3.12.RELEASE'
+
+dependencies {
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.12'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    compile group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    compile "io.grpc:grpc-netty:${grpcVersion}"
+    compile "io.grpc:grpc-protobuf:${grpcVersion}"
+    compile "io.grpc:grpc-stub:${grpcVersion}"
+    compile "io.grpc:grpc-core:${grpcVersion}"
+    compile "io.grpc:grpc-okhttp:${grpcVersion}"
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "${jacksonVersion}"
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: "${jacksonVersion}"
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: "${jacksonVersion}"
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: "${jacksonVersion}"
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: "${jacksonVersion}"
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+    compile group: 'org.mybatis', name: 'mybatis', version: '3.4.4'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
+    compile group: 'org.apache.solr', name: 'solr-solrj', version: '6.5.1'
+    compile group: 'org.quartz-scheduler', name: 'quartz', version: "${quartzVersion}"
+    compile group: 'org.quartz-scheduler', name: 'quartz-jobs', version: "${quartzVersion}"
+    compile group: 'org.springframework', name: 'spring-context', version: "${springVersion}"
+    compile group: 'org.springframework', name: 'spring-core', version: "${springVersion}"
+    compile group: 'org.springframework', name: 'spring-context-support', version: "${springVersion}"
+    compile group: 'org.springframework', name: 'spring-tx', version: "${springVersion}"
+    compile group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.1.1'
+}
+
+protobuf {
+    protoc {
+        // The version of protoc must match protobuf-java. If you don't depend on
+        // protobuf-java directly, you will be transitively depending on the
+        // protobuf-java version that grpc depends on.
+        artifact = 'com.google.protobuf:protoc:3.3.0'
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {
+                // To generate deprecated interfaces and static bindService method,
+                // turn the enable_deprecated option to true below:
+                option 'enable_deprecated=false'
+            }
+        }
+    }
+}
+
+
+idea {
+    module {
+        // Not using generatedSourceDirs because of
+        // https://discuss.gradle.org/t/support-for-intellij-2016/15294/8
+        sourceDirs += file("${projectDir}/build/generated/source/proto/main/java");
+        sourceDirs += file("${projectDir}/build/generated/source/proto/main/grpc");
+    }
+}
+
+jar {
+    archiveName = 'basicQA.jar'
+    manifest {
+        attributes "Main-Class": "ai.mindslab.basicQA.BasicQAServerMain"
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+shadowJar {
+    archiveName = 'basicQA.jar'
+    mergeServiceFiles('META-INF/spring.*')
+}
+

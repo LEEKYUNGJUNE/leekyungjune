@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+message HNetDoc {
+    string context_original = 1;
+    string context = 2;
+    string dp = 3;
+}
+
+message HNetInput {
+    string question_original = 1;
+    string question = 2;
+    string question_dp = 3;
+    repeated HNetDoc docs = 4;
+}
+
+message HNetOutput {
+    repeated int32 answer = 1;
+    float prob = 2;
+}
+
+message HNetOutputs {
+    repeated HNetOutput answers = 1;
+}
+
+service HNet {
+    rpc Predict (HNetInput) returns (HNetOutputs) {}
+}

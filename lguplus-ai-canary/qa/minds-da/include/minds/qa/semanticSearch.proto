@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package minds.qa;
+
+message SemanticSearchInput {
+  float thresHold = 10;
+  int32 windowSize = 20;
+  string kbResult = 30;
+}
+
+message SemanticSearchOutput {
+  repeated SemanticSearchResult semanticResults = 10;
+}
+
+message SemanticSearchResult {
+  string passageText = 10;
+  repeated string passageMorp = 20;
+  float weight = 30;
+  string docType = 40;
+  int32 rank = 50;
+  int64 createDate = 60;
+}
+
+service SemanticSearchService {
+  rpc SearchBM25(SemanticSearchInput) returns (SemanticSearchOutput);
+  rpc SearchTIC(SemanticSearchInput) returns (SemanticSearchOutput);
+  rpc SearchBoolean(SemanticSearchInput) returns (SemanticSearchOutput);
+}

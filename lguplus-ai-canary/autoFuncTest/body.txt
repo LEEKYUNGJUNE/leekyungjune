@@ -1,0 +1,35 @@
+
+{
+ "query":{
+   "utter":"",
+     "type":"SPEECH",
+     "altUtters":["hello"],
+     "lang":"ko_KR",
+     "meta":{
+       "query_key1":"value1",
+       "query_key2":12345,
+       "signal.skill": "qw"
+     }
+ },
+ "contextReset": "false",
+ "device":{
+   "type":"DEV_004",
+   "model" : "model123456",
+   "version" : "v1.2.3.4",
+   "serial" : "serial-194985",
+   "location" : {
+     "latitude" : 23.1234,
+     "longitude" : 123.1233,
+     "location" : "seoul"
+   },
+   "timestamp" : {
+     "seconds" : 1504604908,
+     "nanos" : 0
+   },
+   "timezone" : "KST+9",
+   "meta" : {
+     "dev_key1" : "value1",
+     "dev_key2" : 12345
+                }
+        }
+}

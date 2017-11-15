@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+message MrcPassage {
+    string original = 1;
+    string morp = 2;
+    repeated string words = 3;
+}
+
+message MrcInput {
+    string question = 1;
+    repeated MrcPassage passages = 2;
+}
+
+message MrcOutput {
+    string answer = 1;
+    float prob = 2;
+}
+
+message MrcOutputs {
+    repeated MrcOutput answers = 1;
+}
+
+service MRC {
+    rpc SendQuestion(MrcInput) returns (MrcOutputs) {}
+}

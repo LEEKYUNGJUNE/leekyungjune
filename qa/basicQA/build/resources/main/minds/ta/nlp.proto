@@ -1,0 +1,327 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "minds/lang.proto";
+
+package minds.ta;
+
+enum NlpFeature {
+  NLPF_WORD = 0;
+  NLPF_MORPHEME = 1;
+  NLPF_NAMED_ENTITY = 2;
+  NLPF_CHUNK = 3;
+  NLPF_WORD_SENSE_DISAMBIGUATION = 4;
+  NLPF_PARSER = 5;
+  NLPF_SEMANTIC_ROLE_LABELING = 6;
+  NLPF_ZERO_ANAPHORA = 7;
+  NLPF_SETIMENT = 100;
+  NLPF_DNN = 101;
+}
+
+// According to Level, NLP Analysis
+// NLP_ANALYSIS_ALL : MORPHEME, NAMED_ENTITY, CHUNK
+// NLP_ANALYSIS_WORD(Level 1) : SPACE, WORD, MORPHEME, MORPHEME_EVAL(only nlp kor #3)
+// NLP_ANALYSIS_NAMED_ENTITY(Level 2) : Level 1 + NAMED_ENTITY
+// NLP_ANALYSIS_CHUNK(Level 3) : Level 2 + CHUNK
+// NLP_ANALYSIS_WORD_SENSE_DISAMBIGUATION(Level 4) : Level3 + WORD_SENSE_DISAMBIGUATION
+// NLP_ANALYSIS_DEPENDENCY_PARSER(Level 5) : Level 4 + DEPENDENCY_PARSER
+// NLP_ANALYSIS_SEMANTIC_ROLE_LABELING(Level 6) : Level 5 + SEMANTIC_ROLE_LABELING
+// NLP_ANALYSIS_ZERO_ANAPHORA(Level 7) : Level 6 + ZERO_ANAPHORA
+
+enum NlpAnalysisLevel {
+  NLP_ANALYSIS_ALL = 0;
+  NLP_ANALYSIS_MORPHEME = 1;
+  NLP_ANALYSIS_NAMED_ENTITY = 2;
+  NLP_ANALYSIS_CHUNK = 3;
+  NLP_ANALYSIS_WORD_SENSE_DISAMBIGUATION = 4;
+  NLP_ANALYSIS_DEPENDENCY_PARSER = 5;
+  NLP_ANALYSIS_SEMANTIC_ROLE_LABELING = 6;
+  NLP_ANALYSIS_ZERO_ANAPHORA = 7;
+  // not work
+  NLP_ANALYSIS_RELATION = 100;
+  NLP_ANALYSIS_SENTIMENTAL_ANALYSIS = 101;
+}
+
+// According to Level, Extract Keyword Frequency
+
+enum KeywordFrequencyLevel {
+  KEYWORD_FREQUENCY_ALL = 0;
+  KEYWORD_FREQUENCY_NONE = 1;
+}
+
+message NlpProvider {
+  string name = 1;
+  string vendor = 2;
+  string version = 3;
+  string description = 4;
+  minds.LangCode lang = 5;
+  string support_encoding = 6;
+}
+
+///
+// Input Text
+//
+message InputText {
+  string text = 1;
+  minds.LangCode lang = 2;
+  bool split_sentence = 11;
+  bool use_tokenizer = 12;
+  NlpAnalysisLevel level = 20;
+  KeywordFrequencyLevel keyword_frequency_level = 30;
+}
+
+// ==================================================================
+// Language Analysis
+// ==================================================================
+message KeywordFrequency {
+  int32 seq = 1; // seq of sentence
+  string keyword = 2; // keyword
+  int32 frequency = 3; // keyword frequency
+  string word_type = 4; // named entity type
+  string word_type_nm = 5; // named of named entity(ex. COMPANY)
+}
+
+message Word {
+  int32 seq = 1; // kor nlp #1,3
+  string text = 2; // kor nlp #1,3
+  string tagged_text = 3; // kor nlp #2
+  string type = 4; // kor nlp #1,3
+  int32 begin = 11; // kor nlp #1,3
+  int32 end = 12; // kor nlp #1,3
+  int32 begin_sid = 21; // kor nlp #2
+  int32 end_sid = 22; // kor nlp #2
+  int32 position = 31; // eng nlp #2
+}
+
+message Morpheme {
+  int32 seq = 1;
+  string lemma = 2;
+  string type = 3;
+  int32 position = 4;
+  int32 wid = 5; // kor nlp #2
+  double weight = 11; // kor nlp #3
+}
+
+// kor nlp #3
+message MorphemeEval {
+  int32 seq = 1;
+  string target = 2;
+  string result = 3;
+  int32 word_id = 4;
+  int32 m_begin = 5;
+  int32 m_end = 6;
+}
+
+message NamedEntity {
+  int32 seq = 1;
+  string text = 2;
+  string type = 3;
+  int32 begin = 4;
+  int32 end = 5;
+  double weight = 11; // kor nlp #1
+  int32 common_noun = 12; // kor nlp #1
+  int32 begin_sid = 21; // kor nlp #2
+  int32 end_sid = 22; // kor nlp #2
+}
+
+// kor nlp #3
+message WordSenseDisambiguation {
+  int32 seq = 1;
+  string text = 2;
+  string type = 3;
+  string scode = 4;
+  double weight = 5;
+  int32 position = 6;
+  int32 begin = 7;
+  int32 end = 8;
+}
+
+message Chunk {
+  int32 seq = 1;
+  string text = 2;
+  string type = 3;
+  int32 begin = 4;
+  int32 end = 5;
+  double weight = 11; // kor nlp #3
+}
+
+message DependencyParser {
+  int32 seq = 1;
+  string text = 2;
+  int32 head = 3;
+  string label = 4;
+  repeated int32 mods = 5;
+  double weight = 11; // kor nlp #3
+}
+
+// kor nlp #3
+message PhraseElement {
+  string text = 1;
+  string tabel = 2;
+  int32 begin = 3;
+  int32 end = 4;
+  string ne_type = 5;
+}
+
+// kor nlp #3
+message PhraseClause {
+  int32 seq = 1;
+  string label = 2;
+  string text = 3;
+  int32 begin = 4;
+  int32 end = 5;
+  int32 key_begin = 6;
+  int32 head_phrase = 7;
+  repeated int32 sub_phrases = 8;
+  double weight = 9;
+  repeated PhraseElement elements = 10;
+}
+
+message SRLArgument {
+  string type = 1;
+  int32 word_id = 2;
+  string text = 3;
+}
+
+message SRL {
+  string verb = 1;
+  int32 sense = 2;
+  int32 word_id = 3;
+  double weight = 4;
+  repeated SRLArgument arguments = 5;
+}
+
+// kor nlp #3
+message SRLInformationExtraction {
+  string pred = 1;
+  int32 sense = 2;
+  int32 word_id = 3;
+  double weight = 4;
+  repeated SRLArgument arguments = 5;
+}
+
+message RelationProperty {
+  string type = 1;
+  string value = 2;
+  string value_type = 3;
+  int32 begin = 4;
+  int32 end = 5;
+}
+
+message Relation {
+  string type = 1;
+  string trigger = 2;
+  string sub = 3;
+  string sub_type = 4;
+  int32 begin = 5;
+  int32 end = 6;
+  double weight = 7;
+  repeated RelationProperty rel_props = 8;
+}
+
+message SentimentalAnalysis {
+  int32 type = 1;
+  double degree = 2;
+  double weight = 3;
+  int32 purity = 4;
+  string anchor = 5;
+  int32 anchor_begin = 6;
+  int32 anchor_end = 7;
+  string trigger = 8;
+  int32 trigger_begin = 9;
+  int32 trigger_end = 10;
+  string target = 11;
+  int32 target_begin = 12;
+  int32 target_end = 13;
+  string aspect = 14;
+  string aspect_expr = 15;
+  string aspect_value = 16;
+  int32 aspect_begin = 17;
+  int32 aspect_end = 18;
+}
+
+// kor nlp #3
+message ZeroAnaphora {
+  int32 seq = 1;
+  int32 verb_wid = 2;
+  int32 ant_sid = 3;
+  int32 ant_wid = 4;
+  string type = 5;
+  int32 istitle = 6;
+  double weight = 7;
+}
+
+message Sentence {
+  int32 seq = 1;
+  string text = 2;
+  repeated Word words = 3;
+  repeated Morpheme morps = 4;
+  repeated MorphemeEval morph_evals = 5; // kor nlp #3
+  repeated NamedEntity nes = 6;
+  repeated WordSenseDisambiguation wsds = 7; // kor nlp #3
+  repeated Chunk chunks = 8;
+  repeated DependencyParser dependency_parsers = 9;
+  repeated PhraseClause phrase_clauses = 10; // kor nlp #3
+  repeated SRL srls = 11;
+  repeated SRLInformationExtraction srl_infos = 12; // kor nlp #3
+  repeated Relation relations = 13;
+  repeated SentimentalAnalysis sas = 14;
+  repeated ZeroAnaphora zas = 15; // kor nlp #3
+}
+
+message Document {
+  string category = 1;
+  float category_weight = 2;
+  minds.LangCode lang = 4;
+  repeated Sentence sentences = 11;
+  repeated KeywordFrequency keyword_frequencies = 12;
+}
+
+message NlpFeatures {
+  repeated NlpFeature features = 1;
+}
+
+message NlpFeatureSupport {
+  NlpFeature feature = 1;
+  bool support = 2;
+}
+
+message NlpFeatureSupportList {
+  repeated NlpFeatureSupport supports = 1;
+}
+
+enum NlpDictType {
+  DIC_UNKNOWN = 0;
+  DIC_CUSTOM_MORPHEME = 1;
+  DIC_CUSTOM_COMPOUND_NOUN = 2;
+  DIC_NE_PRE_PROC = 11;
+  DIC_NE_POST_PROC = 12;
+  DIC_SYNONYM = 21;
+}
+
+message NlpDict {
+  NlpDictType type = 1;
+  string download_url = 2;
+  string callback_url = 100;
+}
+
+service NaturalLanguageProcessingService {
+  rpc GetProvider (google.protobuf.Empty) returns (NlpProvider);
+  rpc Analyze (InputText) returns (Document);
+  rpc AnalyzeMultiple (stream InputText) returns (stream Document);
+  rpc HasSupport (NlpFeatures) returns (NlpFeatureSupportList);
+  rpc ApplyDict (NlpDict) returns (google.protobuf.Empty);
+}
+
+message Text {
+  string text = 1;
+}
+
+message TextArray {
+  string text = 1;
+  repeated string sents = 2;
+}
+
+service SplitSentenceService {
+  rpc Split(Text) returns (TextArray);
+}

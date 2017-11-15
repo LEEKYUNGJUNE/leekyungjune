@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package minds.qa;
+
+enum Type {
+  ALL = 0;
+  DB = 1;
+  SEARCH = 2;
+}
+
+message QuestionInput {
+  int32 ntop = 1;
+  Type type = 10;
+  string domain = 20;
+  string question = 30;
+  map<string, string> meta = 40;
+}
+
+message DBResult {
+  string answer = 20;
+}
+
+message SearchResult {
+  string searchQuestion = 10;
+  string answer = 20;
+  float score = 30;
+}
+
+
+message AnswerOutput {
+  string question = 1;
+  repeated DBResult dbResult = 10;
+  repeated SearchResult searchResult = 20;
+}
+
+service BasicQAService {
+  rpc Question(QuestionInput) returns (AnswerOutput);
+}

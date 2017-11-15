@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package minds;
+
+option cc_enable_arenas = true;
+
+// ISO-639에 따라서 3글자의 소문자로만 표시한다.
+// 뒤에 붙는 정수는 enum으로 생성된 순서로 붙는 것이고
+// 논리적인 의미
+// 필요한 경우 2가지 형태로 모두 사용이 가능한다.
+
+// minds::LangCode_Name(minds::LangCode::kor)
+// minds::LangCode::kor
+enum LangCode {
+  kor = 0; // KOREAN
+  eng = 1; // ENGLISH
+}
+
